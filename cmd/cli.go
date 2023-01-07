@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"os"
 
@@ -20,19 +19,13 @@ func info() {
 	app.Version = "1.0.0"
 }
 
-func loginInput() KeyVal {
-	aliasKeyInput := pterm.InteractiveTextInputPrinter{
-		DefaultText: "Uername: ",
-		TextStyle:   &pterm.ThemeDefault.PrimaryStyle,
-	}
-
-	aliasKeyStr, _ := aliasKeyInput.WithMultiLine(false).Show()
-	fmt.Println("Password: ")
+func loginInput(username string) KeyVal {
+	pterm.Print(pterm.Cyan("Password: "))
 	password, _ := terminal.ReadPassword(0)
 	pterm.Println()
 
 	aliasModel := KeyVal{
-		Key:   aliasKeyStr,
+		Key:   username,
 		Value: string(password),
 	}
 
@@ -44,22 +37,39 @@ func loginInput() KeyVal {
 }
 
 func commands() {
+	var username string
 	app.Commands = []cli.Command{
 		{
+			Name:    "add",
+			Aliases: []string{"a"},
+			Usage:   "Add",
+			Action: func(c *cli.Context) {
+
+				log.Println(c.Args())
+				createAlias()
+			},
+		},
+		{
 			Name:    "sync",
-			Aliases: []string{"p"},
+			Aliases: []string{"s"},
 			Usage:   "Sync all alias",
 			Action: func(c *cli.Context) {
-				cred := loginInput()
-				SaveCred(cred)
+				log.Println("Sync running...")
 			},
 		},
 		{
 			Name:    "login",
-			Aliases: []string{"pa"},
+			Aliases: []string{"l"},
 			Usage:   "Login",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:        "u",
+					Usage:       "Enter username",
+					Destination: &username,
+				},
+			},
 			Action: func(c *cli.Context) {
-				cred := loginInput()
+				cred := loginInput(username)
 				SaveCred(cred)
 			},
 		},
